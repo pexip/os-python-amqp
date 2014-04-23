@@ -1,0 +1,19 @@
+Description: Remove github-hosted logo from documentation
+Author: Michael Fladischer <FladischerMichael@fladi.at>
+Last-Update: 2014-04-08
+Forwarded: not-needed
+
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -77,9 +77,8 @@
+ html_theme = "celery"
+ html_theme_path = ["_theme"]
+ html_sidebars = {
+-    'index': ['sidebarintro.html', 'sourcelink.html', 'searchbox.html'],
+-    '**': ['sidebarlogo.html', 'relations.html',
+-           'sourcelink.html', 'searchbox.html'],
++    'index': ['sourcelink.html', 'searchbox.html'],
++    '**': ['relations.html', 'sourcelink.html', 'searchbox.html'],
+ }
+ 
+ ### Issuetracker
