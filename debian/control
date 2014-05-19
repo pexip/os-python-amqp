@@ -1,8 +1,9 @@
 Source: python-amqp
 Section: python
 Priority: extra
-Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Uploaders: Michael Fladischer <FladischerMichael@fladi.at>
+Maintainer: Pexip AS <packaging@pexip.com>
+XSBC-Pexip-Original-Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+XSBC-Pexip-Original-Uploaders: Michael Fladischer <FladischerMichael@fladi.at>
 Build-Depends: debhelper (>= 8.1.0~),
                python-all,
                python-setuptools,
@@ -17,6 +18,7 @@ X-Python3-Version: >= 3.0
 Homepage: https://github.com/celery/py-amqp
 Vcs-Svn: svn://anonscm.debian.org/python-modules/packages/python-amqp/trunk/
 Vcs-Browser: http://anonscm.debian.org/viewvc/python-modules/packages/python-amqp/trunk/
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
 
 Package: python-amqp
 Architecture: all
