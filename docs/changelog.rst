@@ -5,6 +5,43 @@ py-amqp is fork of amqplib used by Kombu containing additional features and impr
 The previous amqplib changelog is here:
 http://code.google.com/p/py-amqplib/source/browse/CHANGES
 
+.. _version-1.4.7:
+
+1.4.7
+=====
+:release-date: 2015-10-02 05:30 P.M PDT
+:release-by: Ask Solem
+
+- Fixed libSystem error on OS X 10.11 (El Capitan)
+
+    Fix contributed by Eric Wang.
+
+- ``channel.basic_publish`` now raises :exc:`amqp.exceptions.NotConfirmed` on
+    ``basic.nack``.
+
+- AMQP timestamps received are now converted from GMT instead of local time
+    (Issue #67).
+
+- Wheel package installation now supported by both Python 2 and Python3.
+
+    Fix contributed by Rémy Greinhofer.
+
+.. _version-1.4.6:
+
+1.4.6
+=====
+:release-date: 2014-08-11 06:00 P.M UTC
+:release-by: Ask Solem
+
+- Now keeps buffer when socket times out.
+
+    Fix contributed by Artyom Koval.
+
+- Adds ``Connection.Transport`` attribute that can be used to specify
+  a different transport implementation.
+
+    Contributed by Yury Selivanov.
+
 .. _version-1.4.5:
 
 1.4.5
@@ -232,7 +269,7 @@ http://code.google.com/p/py-amqplib/source/browse/CHANGES
 
 1.1.0
 =====
-:release-date: 2012-11-08 10:36 P.M UTC
+:release-date: 2013-11-08 10:36 P.M UTC
 :release-by: Ask Solem
 
 - No longer supports Python 2.5

@@ -2,6 +2,7 @@ Changelog
 LICENSE
 MANIFEST.in
 README.rst
+setup.cfg
 setup.py
 amqp/__init__.py
 amqp/abstract_channel.py
@@ -20,6 +21,9 @@ amqp.egg-info/SOURCES.txt
 amqp.egg-info/dependency_links.txt
 amqp.egg-info/not-zip-safe
 amqp.egg-info/top_level.txt
+amqp/tests/__init__.py
+amqp/tests/case.py
+amqp/tests/test_channel.py
 demo/amqp_clock.py
 demo/demo_receive.py
 demo/demo_send.py

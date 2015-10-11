@@ -2,21 +2,21 @@ Source: python-amqp
 Section: python
 Priority: extra
 Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Uploaders: Michael Fladischer <FladischerMichael@fladi.at>
-Build-Depends: debhelper (>= 8.1.0~),
+Uploaders: Michael Fladischer <fladi@debian.org>, Thomas Goirand <zigo@debian.org>
+Build-Depends: debhelper (>= 9),
+               dh-python,
                python-all,
                python-setuptools,
                python3-all,
                python3-setuptools
 Build-Depends-Indep: libjs-jquery,
-                     python-sphinx (>= 1.0.7+dfsg-1~),
-                     python-sphinxcontrib.issuetracker
-Standards-Version: 3.9.5
+                     python-sphinx (>= 1.0.7+dfsg-1~)
+Standards-Version: 3.9.6
 X-Python-Version: >= 2.5
 X-Python3-Version: >= 3.0
 Homepage: https://github.com/celery/py-amqp
-Vcs-Svn: svn://anonscm.debian.org/python-modules/packages/python-amqp/trunk/
-Vcs-Browser: http://anonscm.debian.org/viewvc/python-modules/packages/python-amqp/trunk/
+Vcs-Git: git://anonscm.debian.org/python-modules/packages/python-amqp.git
+Vcs-Browser: https://anonscm.debian.org/cgit/python-modules/packages/python-amqp.git
 
 Package: python-amqp
 Architecture: all
