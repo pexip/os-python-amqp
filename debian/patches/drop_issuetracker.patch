@@ -1,0 +1,26 @@
+From 6c4fd816e51fd8044065cfdfe6cbe0048c2e7424 Mon Sep 17 00:00:00 2001
+From: Michael Fladischer <fladi@debian.org>
+Date: Thu, 8 Oct 2015 11:06:36 -0700
+Subject: Drop dependency on sphinxcontrib.issuetracker
+
+Last-Update: 2015-04-02
+
+Patch-Name: drop_issuetracker.patch
+---
+ docs/conf.py | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/docs/conf.py b/docs/conf.py
+index 623efea..567f509 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -18,8 +18,7 @@ import amqp
+ extensions = ['sphinx.ext.autodoc',
+               'sphinx.ext.coverage',
+               'sphinx.ext.pngmath',
+-              'sphinx.ext.intersphinx',
+-              'sphinxcontrib.issuetracker']
++              'sphinx.ext.intersphinx']
+ 
+ html_show_sphinx = False
+ 

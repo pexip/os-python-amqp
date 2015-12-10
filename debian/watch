@@ -1,3 +1,4 @@
 version=3
-opts=pgpsigurlmangle=s/$/.asc/ \
-https://pypi.python.org/packages/source/a/amqp/amqp-([\d\.]+)\.tar\.gz
+
+opts=uversionmangle=s/(rc|a|b|c)/~$1/ \
+http://pypi.debian.net/amqp/amqp-(.+)\.(?:zip|tgz|tbz|txz|(?:tar\.(?:gz|bz2|xz)))
