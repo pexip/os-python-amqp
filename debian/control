@@ -2,7 +2,8 @@ Source: python-amqp
 Section: python
 Priority: extra
 Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Uploaders: Michael Fladischer <fladi@debian.org>, Thomas Goirand <zigo@debian.org>
+Uploaders: Michael Fladischer <fladi@debian.org>, Thomas Goirand <zigo@debian.org>,
+ Brian May <bam@debian.org>
 Build-Depends: debhelper (>= 9),
                dh-python,
                python-all,

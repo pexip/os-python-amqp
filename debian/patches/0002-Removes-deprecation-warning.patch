@@ -1,4 +1,4 @@
-From 88c452b5df8eb971c8022cdab9d0c22a884d30e3 Mon Sep 17 00:00:00 2001
+From fb734494eea47b850974de8912e29d0987b5344c Mon Sep 17 00:00:00 2001
 From: Thomas Goirand <zigo@debian.org>
 Date: Thu, 8 Oct 2015 11:06:35 -0700
 Subject: Removes deprecation warning
@@ -9,17 +9,15 @@ Subject: Removes deprecation warning
 Bug-Debian: https://bugs.debian.org/774966
 Forwarded: not-needed
 Last-Update: 2014-01-17
-
-Patch-Name: remove-deprecation-warning.patch
 ---
  amqp/channel.py | 3 ---
  1 file changed, 3 deletions(-)
 
 diff --git a/amqp/channel.py b/amqp/channel.py
-index 05eb09a..69ee6c1 100644
+index ff6a4ae..0d4897e 100644
 --- a/amqp/channel.py
 +++ b/amqp/channel.py
-@@ -612,9 +612,6 @@ class Channel(AbstractChannel):
+@@ -614,9 +614,6 @@ class Channel(AbstractChannel):
          args.write_table(arguments)
          self._send_method((40, 10), args)
  

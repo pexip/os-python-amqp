@@ -1,11 +1,8 @@
 # see git-dpm(1) from git-dpm package
-870974818ad55e03961fd15ee2ee9a445d2d90e9
-870974818ad55e03961fd15ee2ee9a445d2d90e9
-9f963bd307977edb36677073fa13df602eb37fac
-9f963bd307977edb36677073fa13df602eb37fac
-python-amqp_1.4.6.orig.tar.gz
-662c1e472d3c8df6edf7e7f905ab7079239b51f9
-77902
-debianTag="debian/%e%v"
-patchedTag="patched/%e%v"
-upstreamTag="upstream/%e%u"
+50d9763b0bd213efc79e0633139a555e4c933682
+50d9763b0bd213efc79e0633139a555e4c933682
+cffa3b54a58deb0770a73c48c03d1c81fbd6fab3
+cffa3b54a58deb0770a73c48c03d1c81fbd6fab3
+python-amqp_1.4.9.orig.tar.gz
+574f0e599ee7c1a42d9738bcb7e34db125f339d9
+79392

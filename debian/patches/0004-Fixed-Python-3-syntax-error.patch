@@ -1,4 +1,4 @@
-From 870974818ad55e03961fd15ee2ee9a445d2d90e9 Mon Sep 17 00:00:00 2001
+From 50d9763b0bd213efc79e0633139a555e4c933682 Mon Sep 17 00:00:00 2001
 From: Thomas Goirand <zigo@debian.org>
 Date: Thu, 8 Oct 2015 11:06:37 -0700
 Subject: Fixed Python 3 syntax error
@@ -7,8 +7,6 @@ Subject: Fixed Python 3 syntax error
  the master branch.
 Forwarded: no
 Last-Update: 2015-06-19
-
-Patch-Name: fix-syntax-error-in-python3.patch
 ---
  amqp/utils.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

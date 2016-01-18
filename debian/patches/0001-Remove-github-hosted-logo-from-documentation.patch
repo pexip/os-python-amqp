@@ -1,12 +1,10 @@
-From a45e8e4de438dadbf0d7d16199c7dcd89c799770 Mon Sep 17 00:00:00 2001
+From 744497b42ea44f82a524eefc3cdda8f8b8b3644b Mon Sep 17 00:00:00 2001
 From: Michael Fladischer <fladi@debian.org>
 Date: Thu, 8 Oct 2015 11:06:34 -0700
 Subject: Remove github-hosted logo from documentation
 
 Last-Update: 2014-04-08
 Forwarded: not-needed
-
-Patch-Name: remove_logo.patch
 ---
  docs/conf.py | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
