@@ -5,6 +5,29 @@ py-amqp is fork of amqplib used by Kombu containing additional features and impr
 The previous amqplib changelog is here:
 http://code.google.com/p/py-amqplib/source/browse/CHANGES
 
+.. _version-1.4.9:
+
+1.4.9
+=====
+:release-date: 2016-01-08 5:50 PM PST
+
+- Fixes compatibility with Linux/OS X instances where the ``ctypes`` module
+  does not exist.
+
+    Fix contributed by Jared Lewis.
+
+.. _version-1.4.8:
+
+1.4.8
+=====
+:release-date: 2015-12-07 12:25 AM
+:release-by: Ask Solem
+
+- ``abstract_channel.wait`` now accepts a float `timeout` parameter expressed
+    in seconds
+
+    Contributed by Goir.
+
 .. _version-1.4.7:
 
 1.4.7
