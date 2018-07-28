@@ -3,7 +3,8 @@ Section: python
 Priority: extra
 Maintainer: Pexip AS <packaging@pexip.com>
 XSBC-Pexip-Original-Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-XSBC-Pexip-Original-Uploaders: Michael Fladischer <fladi@debian.org>, Thomas Goirand <zigo@debian.org>
+XSBC-Pexip-Original-Uploaders: Michael Fladischer <fladi@debian.org>, Thomas Goirand <zigo@debian.org>,
+ Brian May <bam@debian.org>
 Build-Depends: debhelper (>= 9),
                dh-python,
                python-all,

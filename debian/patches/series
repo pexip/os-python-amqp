@@ -1,4 +1,4 @@
-remove_logo.patch
-remove-deprecation-warning.patch
-drop_issuetracker.patch
-fix-syntax-error-in-python3.patch
+0001-Remove-github-hosted-logo-from-documentation.patch
+0002-Removes-deprecation-warning.patch
+0003-Drop-dependency-on-sphinxcontrib.issuetracker.patch
+0004-Fixed-Python-3-syntax-error.patch

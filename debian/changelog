@@ -1,3 +1,24 @@
+python-amqp (1.4.9-1pexip1) pexip; urgency=low
+
+  * New upstream release
+
+ -- John-Mark Bell <jmb@pexip.com>  Sat, 28 Jul 2018 22:39:05 +0100
+
+python-amqp (1.4.9-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release.
+
+ -- Brian May <bam@debian.org>  Mon, 18 Jan 2016 18:42:27 +1100
+
+python-amqp (1.4.8-1) unstable; urgency=low
+
+  * New upstream release.
+  * Replace broken git-dpm config.
+  * Enable more tests.
+
+ -- Michael Fladischer <fladi@debian.org>  Sat, 19 Dec 2015 18:25:57 +0100
+
 python-amqp (1.4.7-1pexip1) pexip; urgency=low
 
   * Prepare Pexip packaging

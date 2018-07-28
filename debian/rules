@@ -27,5 +27,7 @@ ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	set -e; \
 	for python in $(shell pyversions -r) $(shell py3versions -r); do \
 	  PYTHONPATH=. $$python funtests/test_basic_message.py; \
+	  PYTHONPATH=. $$python funtests/test_exceptions.py; \
+	  PYTHONPATH=. $$python funtests/test_serialization.py; \
 	done
 endif
