@@ -1,4 +1,4 @@
-0001-Remove-github-hosted-logo-from-documentation.patch
-0002-Removes-deprecation-warning.patch
-0003-Drop-dependency-on-sphinxcontrib.issuetracker.patch
-0004-Fixed-Python-3-syntax-error.patch
+0001-Remove-PayPal-image-URLs.patch
+0002-Disable-intersphinx-mapping-for-now.patch
+0010-remove-broken-test.patch
+Always_treat_SSLError_timeouts_as_socket_timeouts.patch

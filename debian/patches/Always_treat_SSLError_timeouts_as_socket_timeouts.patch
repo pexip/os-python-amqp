@@ -1,0 +1,63 @@
+Description: Always treat SSLError timeouts as socket timeouts (#247)
+ Without specifically handling this case, the socket.timeout()
+ was not raised sometimes causing the connection to lock up.
+ .
+ In the case we hit the errno was None, so the previous if
+ condition did not apply.
+Author: Dirk Mueller <dmueller@suse.com>
+Date: Thu, 31 Jan 2019 15:07:26 +0100
+Co-Authored-By: aojeagarcia <aojeagarcia@suse.com>
+Origin: upstream, https://github.com/celery/py-amqp/commit/bf122a05a21a8cc5bca314b0979f32c8026fc66e.patch
+Last-Update: 2019-05-17
+
+Index: python-amqp/amqp/transport.py
+===================================================================
+--- python-amqp.orig/amqp/transport.py
++++ python-amqp/amqp/transport.py
+@@ -374,6 +374,10 @@ class SSLTransport(_AbstractTransport):
+                 try:
+                     s = recv(n - len(rbuf))  # see note above
+                 except socket.error as exc:
++                    # ssl.sock.read may cause a SSLerror without errno
++                    # http://bugs.python.org/issue10272
++                    if isinstance(exc, SSLError) and 'timed out' in str(exc):
++                        raise socket.timeout()
+                     # ssl.sock.read may cause ENOENT if the
+                     # operation couldn't be performed (Issue celery#1414).
+                     if exc.errno in _errnos:
+Index: python-amqp/t/unit/test_transport.py
+===================================================================
+--- python-amqp.orig/t/unit/test_transport.py
++++ python-amqp/t/unit/test_transport.py
+@@ -4,7 +4,7 @@ import errno
+ import socket
+ 
+ import pytest
+-from case import ANY, Mock, call, patch
++from case import ANY, Mock, MagicMock, call, patch
+ 
+ from amqp import transport
+ from amqp.exceptions import UnexpectedFrame
+@@ -600,6 +600,22 @@ class test_SSLTransport:
+                            match=r'.*Server unexpectedly closed connection.*'):
+             self.t._read(64)
+ 
++    def test_read_timeout(self):
++        self.t.sock = Mock(name='SSLSocket')
++        self.t._quick_recv = Mock(name='recv', return_value='4')
++        self.t._quick_recv.side_effect = socket.timeout()
++        self.t._read_buffer = MagicMock(return_value='AA')
++        with pytest.raises(socket.timeout):
++            self.t._read(64)
++
++    def test_read_SSLError(self):
++        self.t.sock = Mock(name='SSLSocket')
++        self.t._quick_recv = Mock(name='recv', return_value='4')
++        self.t._quick_recv.side_effect = transport.SSLError('timed out')
++        self.t._read_buffer = MagicMock(return_value='AA')
++        with pytest.raises(socket.timeout):
++            self.t._read(64)
++
+ 
+ class test_TCPTransport:
+ 
