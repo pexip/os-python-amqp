@@ -17,7 +17,10 @@
     amqp.abstract_channel
     amqp.transport
     amqp.method_framing
+    amqp.platform
     amqp.protocol
+    amqp.sasl
     amqp.serialization
+    amqp.spec
     amqp.utils
     amqp.five
