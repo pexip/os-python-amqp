@@ -1,2 +1,1 @@
-Sphinx
-sphinxcontrib-issuetracker>=0.9
+git+https://github.com/celery/sphinx_celery.git

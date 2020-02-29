@@ -2,9 +2,11 @@
  Python AMQP 0.9.1 client library
 =====================================================================
 
-:Version: 1.4.9
-:Web: http://amqp.readthedocs.org/
-:Download: http://pypi.python.org/pypi/amqp/
+|build-status| |coverage| |license| |wheel| |pyversion| |pyimp|
+
+:Version: 2.4.0
+:Web: https://amqp.readthedocs.io/
+:Download: https://pypi.org/project/amqp/
 :Source: http://github.com/celery/py-amqp/
 :Keywords: amqp, rabbitmq
 
@@ -17,10 +19,10 @@ alternative when `librabbitmq`_ is not available.
 
 This library should be API compatible with `librabbitmq`_.
 
-.. _amqplib: http://pypi.python.org/pypi/amqplib
+.. _amqplib: https://pypi.org/project/amqplib/
 .. _Celery: http://celeryproject.org/
-.. _kombu: http://kombu.readthedocs.org/
-.. _librabbitmq: http://pypi.python.org/pypi/librabbitmq
+.. _kombu: https://kombu.readthedocs.io/
+.. _librabbitmq: https://pypi.org/project/librabbitmq/
 
 Differences from `amqplib`_
 ===========================
@@ -48,6 +50,10 @@ Differences from `amqplib`_
         - ``Channel.events['basic_ack'].append(my_callback)`` adds a callback
           to be called when a message is confirmed. This callback is then
           called with the signature ``(delivery_tag, multiple)``.
+    - Authentication Failure Notifications
+        Instead of just closing the connection abruptly on invalid
+        credentials, py-amqp will raise an ``AccessRefused`` error
+        when connected to rabbitmq-server 3.2.0 or greater.
 - Support for ``basic_return``
 - Uses AMQP 0-9-1 instead of 0-8.
     - ``Channel.access_request`` and ``ticket`` arguments to methods
@@ -99,6 +105,26 @@ Further
 
     http://www.rabbitmq.com/devtools.html#python-dev
 
-.. image:: https://d2weczhvl823v0.cloudfront.net/celery/celery/trend.png
-    :alt: Bitdeli badge
-    :target: https://bitdeli.com/free
+.. |build-status| image:: https://secure.travis-ci.org/celery/py-amqp.png?branch=master
+    :alt: Build status
+    :target: https://travis-ci.org/celery/py-amqp
+
+.. |coverage| image:: https://codecov.io/github/celery/py-amqp/coverage.svg?branch=master
+    :target: https://codecov.io/github/celery/py-amqp?branch=master
+
+.. |license| image:: https://img.shields.io/pypi/l/amqp.svg
+    :alt: BSD License
+    :target: https://opensource.org/licenses/BSD-3-Clause
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/amqp.svg
+    :alt: Python AMQP can be installed via wheel
+    :target: https://pypi.org/project/amqp/
+
+.. |pyversion| image:: https://img.shields.io/pypi/pyversions/amqp.svg
+    :alt: Supported Python versions.
+    :target: https://pypi.org/project/amqp/
+
+.. |pyimp| image:: https://img.shields.io/pypi/implementation/amqp.svg
+    :alt: Support Python implementations.
+    :target: https://pypi.org/project/amqp/
+

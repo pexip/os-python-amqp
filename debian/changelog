@@ -1,3 +1,100 @@
+python-amqp (2.4.0-2) unstable; urgency=medium
+
+  * Add Always_treat_SSLError_timeouts_as_socket_timeouts.patch, which fixes
+    MessagingTimeout: Timed out waiting for a reply to message ID <ID> in
+    OpenStack (and other users).
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 17 May 2019 14:26:02 +0200
+
+python-amqp (2.4.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Use 'python3 -m sphinx' instead of sphinx-build for building docs
+
+  [ Thomas Goirand ]
+  * New upstream release, working with OpenSSL 1.1.1.
+  * Add 0010-remove-broken-test.patch.
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 22 Jan 2019 14:29:00 +0000
+
+python-amqp (2.3.2-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Set Vcs-* to salsa.debian.org
+  * d/changelog: Remove trailing whitespaces
+  * d/tests: Use AUTOPKGTEST_TMP instead of ADTTMP
+
+  [ Thomas Goirand ]
+  * Removed debian/gbp.conf, not needed, inducing gbp in wrong branch.
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 19 Aug 2018 21:48:17 +0000
+
+python-amqp (2.2.2-1) unstable; urgency=medium
+
+  * Uploading to unstable.
+  * Ran wrap-and-sort -bast to reduce diff size of future changes.
+  * Removed X-Python-Version: >= 2.5 and X-Python3-Version: >= 3.0, as these
+    versions are even satisfied in oldoldstable.
+  * Properly building docs from override_dh_sphinxdoc and respecting
+    DEB_BUILD_OPTIONS=nodoc, plus handling build profiles (also with nocheck).
+  * Building sphinx doc directly within the destination folder:
+    $(CURDIR)/debian/python-amqp-doc/usr/share/doc/python-amqp-doc/html
+
+ -- Thomas Goirand <zigo@debian.org>  Sat, 04 Nov 2017 20:57:21 +0000
+
+python-amqp (2.2.2-1~exp1) experimental; urgency=low
+
+  * New upstream release.
+  * Move upstream signing key to debian/upstream/signing-key.asc.
+  * Use https:// for uscan URL.
+  * Bump Standards-Version to 4.1.1.
+  * Raise minimum Python versions to 2.7 and 3.4.
+  * Remove trailing whitespaces from d/changelog.
+  * Replace Priority extra with optional as required by policy 4.0.1.
+  * Let /usr/share/dpkg/pkg-info.mk export SOURCE_DATE_EPOCH so sphinx
+    can pick it up directly.
+
+ -- Michael Fladischer <fladi@debian.org>  Wed, 01 Nov 2017 18:21:42 +0100
+
+python-amqp (2.2.1-1~exp1) experimental; urgency=low
+
+  * New upstream release.
+  * Add new upstream signing key.
+  * Add patch disabling intersphinx to prevent network requests during
+    build.
+  * Bump Standards-Version to 4.0.0.
+
+ -- Michael Fladischer <fladi@debian.org>  Sun, 30 Jul 2017 23:38:21 +0200
+
+python-amqp (2.1.4-1) experimental; urgency=medium
+
+  * Refresh patches after git-dpm to gbp pq conversion
+  * New upstream release (2.1.4)
+  * Remove patches no longer required
+  * Add .cache to debian/clean
+  * Add .egg-info to diff ignore
+  * Update build dependencies
+  * Use new tests
+  * Update debian/copyright (project license changed from LGPL-2.1+ to
+    BSD-3-clause)
+  * Add myself to uploaders
+  * Add patch to remove PayPal image URLs
+  * Set http(s) proxy to localhost during doc build
+
+ -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Mar 2017 11:18:39 +0000
+
+python-amqp (1.4.9-2) unstable; urgency=medium
+
+  * Team upload.
+  * Add pgpsigurlmangle to debian/watch
+  * Bump standards version 3.9.6 to 3.9.8 (no change required)
+  * Add basic autodep8 CI test
+  * Remove unnecessary version from dependency
+  * Use secure URL for debian/copyright format
+
+ -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Feb 2017 13:44:47 +0000
+
 python-amqp (1.4.9-1pexip1) pexip; urgency=low
 
   * New upstream release
