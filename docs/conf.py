@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from sphinx_celery import conf
 
 globals().update(conf.build_config(
     'amqp', __file__,
     project='py-amqp',
     description='Python Promises',
-    version_dev='2.4',
-    version_stable='2.3',
+    version_dev='5.1',
+    version_stable='5.0',
     canonical_url='https://amqp.readthedocs.io',
     webdomain='celeryproject.org',
     github_project='celery/py-amqp',

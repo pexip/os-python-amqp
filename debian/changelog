@@ -1,10 +1,105 @@
-python-amqp (2.4.0-2) unstable; urgency=medium
+python-amqp (5.0.3-3) unstable; urgency=medium
 
-  * Add Always_treat_SSLError_timeouts_as_socket_timeouts.patch, which fixes
-    MessagingTimeout: Timed out waiting for a reply to message ID <ID> in
-    OpenStack (and other users).
+  [ Debian Janitor ]
+  * Apply multi-arch hints.
+    + python-amqp-doc: Add Multi-Arch: foreign.
 
- -- Thomas Goirand <zigo@debian.org>  Fri, 17 May 2019 14:26:02 +0200
+  [ Thomas Goirand ]
+  * New upstream point release.
+  * Refresh patches.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 22 Jan 2021 17:12:54 +0100
+
+python-amqp (5.0.1-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+  * Add a debian/salsa-ci.yml.
+
+  [ Nicolas Dandrimont ]
+  * Mark import autopkgtest as superficial.
+  * Drop unused upstream signing key (Closes: #925389).
+
+ -- Nicolas Dandrimont <olasd@debian.org>  Sat, 17 Oct 2020 00:44:17 +0200
+
+python-amqp (2.6.1-1) unstable; urgency=low
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+
+  [ Ondřej Nový ]
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 13 Oct 2020 14:51:57 +0200
+
+python-amqp (2.6.0-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream version 2.6.0
+  * Bump Standards-Version to 4.5.0.
+
+ -- Sergio Durigan Junior <sergiodj@debian.org>  Sun, 14 Jun 2020 23:45:22 -0400
+
+python-amqp (2.5.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * Refresh patches.
+  * Clean up .pytest_cache/CACHEDIR.TAG to allow two builds in a row.
+  * Bump Standards-Version to 4.4.1.
+  * Set Rules-Requires-Root: no.
+  * Use SOURCE_DATE_EPOCH instead of parsing d/changelog.
+  * Fix typo in patch.
+
+ -- Michael Fladischer <fladi@debian.org>  Mon, 16 Dec 2019 20:33:18 +0100
+
+python-amqp (2.5.0-2) unstable; urgency=medium
+
+  * Team upload.
+  * Don't try to run autopkgtests on Python 2.
+
+ -- Andrey Rahmatullin <wrar@debian.org>  Wed, 07 Aug 2019 23:42:36 +0500
+
+python-amqp (2.5.0-1) unstable; urgency=low
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+  * Bump Standards-Version to 4.4.0.
+
+  [ Michael Fladischer ]
+  * New upstream release.
+  * Add debian/gbp.conf.
+  * Disable PGP signature check in uscan as upstream is not providing a
+    signature for current releases.
+  * Refresh patches.
+  * Bump debhelper version to 12.
+  * Clean up pytest artifacts to allow two builds in a row.
+  * Fix typo in patch.
+
+ -- Michael Fladischer <fladi@debian.org>  Thu, 25 Jul 2019 09:11:38 +0200
+
+python-amqp (2.4.2-2) unstable; urgency=medium
+
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 17 Jul 2019 01:32:00 +0200
+
+python-amqp (2.4.2-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Refresh 0010-remove-broken-test.patch.
+  * Removed Python 2 support.
+  * Do not run integration tests.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 20 Mar 2019 22:00:34 +0100
 
 python-amqp (2.4.0-1) unstable; urgency=medium
 

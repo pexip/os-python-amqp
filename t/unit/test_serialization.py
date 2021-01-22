@@ -1,18 +1,17 @@
-from __future__ import absolute_import, unicode_literals
-
+import pickle
 from datetime import datetime
 from decimal import Decimal
 from math import ceil
+from struct import pack
 
 import pytest
 
 from amqp.basic_message import Message
 from amqp.exceptions import FrameSyntaxError
-from amqp.platform import pack
 from amqp.serialization import GenericContent, _read_item, dumps, loads
 
 
-class _ANY(object):
+class _ANY:
 
     def __eq__(self, other):
         return other is not None
@@ -25,6 +24,7 @@ class test_serialization:
 
     @pytest.mark.parametrize('descr,frame,expected,cast', [
         ('S', b's8thequick', 'thequick', None),
+        ('S', b'S\x00\x00\x00\x03\xc0\xc0\x00', b'\xc0\xc0\x00', None),
         ('x', b'x\x00\x00\x00\x09thequick\xffIGNORED', b'thequick\xff', None),
         ('b', b'b' + pack('>B', True), True, None),
         ('B', b'B' + pack('>b', 123), 123, None),
@@ -36,12 +36,12 @@ class test_serialization:
         ('f', b'f' + pack('>f', 33.3), 34.0, ceil),
     ])
     def test_read_item(self, descr, frame, expected, cast):
-        actual = _read_item(frame)[0]
+        actual = _read_item(frame, 0)[0]
         actual = cast(actual) if cast else actual
         assert actual == expected
 
     def test_read_item_V(self):
-        assert _read_item(b'V')[0] is None
+        assert _read_item(b'V', 0)[0] is None
 
     def test_roundtrip(self):
         format = b'bobBlLbsbSTx'
@@ -51,7 +51,7 @@ class test_serialization:
             datetime(2015, 3, 13, 10, 23),
             b'thequick\xff'
         ])
-        y = loads(format, x)
+        y = loads(format, x, 0)
         assert [
             True, 32, False, 3415, 4513134, 13241923419,
             True, 'thequickbrownfox', False, 'jumpsoverthelazydog',
@@ -63,22 +63,41 @@ class test_serialization:
         x = dumps(format, [
             {'a': -2147483649, 'b': 2147483648},  # celery/celery#3121
         ])
-        y = loads(format, x)
+        y = loads(format, x, 0)
         assert y[0] == [{
             'a': -2147483649, 'b': 2147483648,  # celery/celery#3121
         }]
 
     def test_loads_unknown_type(self):
         with pytest.raises(FrameSyntaxError):
-            loads('y', 'asdsad')
+            loads('y', 'asdsad', 0)
 
     def test_float(self):
-        assert (int(loads(b'fb', dumps(b'fb', [32.31, False]))[0][0] * 100) ==
-                3231)
+        data = int(loads(b'fb', dumps(b'fb', [32.31, False]), 0)[0][0] * 100)
+        assert(data == 3231)
 
     def test_table(self):
-        table = {'foo': 32, 'bar': 'baz', 'nil': None}
-        assert loads(b'F', dumps(b'F', [table]))[0][0] == table
+        table = {
+            'foo': 32,
+            'bar': 'baz',
+            'nil': None,
+            'array': [
+                1, True, 'bar'
+            ]
+        }
+        assert loads(b'F', dumps(b'F', [table]), 0)[0][0] == table
+
+    def test_table__unknown_type(self):
+        table = {
+            'foo': object(),
+            'bar': 'baz',
+            'nil': None,
+            'array': [
+                1, True, 'bar'
+            ]
+        }
+        with pytest.raises(FrameSyntaxError):
+            dumps(b'F', [table])
 
     def test_array(self):
         array = [
@@ -92,11 +111,25 @@ class test_serialization:
         expected = list(array)
         expected[6] = _ANY()
 
-        assert expected == loads('A', dumps('A', [array]))[0][0]
+        assert expected == loads('A', dumps('A', [array]), 0)[0][0]
 
     def test_array_unknown_type(self):
         with pytest.raises(FrameSyntaxError):
             dumps('A', [[object()]])
+
+    def test_bit_offset_adjusted_correctly(self):
+        expected = [50, "quick", "fox", True,
+                    False, False, True, True, {"prop1": True}]
+        buf = dumps('BssbbbbbF', expected)
+        actual, _ = loads('BssbbbbbF', buf, 0)
+        assert actual == expected
+
+    def test_sixteen_bitflags(self):
+        expected = [True, False] * 8
+        format = 'b' * len(expected)
+        buf = dumps(format, expected)
+        actual, _ = loads(format, buf, 0)
+        assert actual == expected
 
 
 class test_GenericContent:
@@ -107,11 +140,12 @@ class test_GenericContent:
 
     def test_getattr(self):
         self.g.properties['foo'] = 30
-        with pytest.raises(AttributeError):
-            self.g.__setstate__
         assert self.g.foo == 30
         with pytest.raises(AttributeError):
             self.g.bar
+
+    def test_pickle(self):
+        pickle.loads(pickle.dumps(self.g))
 
     def test_load_properties(self):
         m = Message()
@@ -136,7 +170,7 @@ class test_GenericContent:
         }
         s = m._serialize_properties()
         m2 = Message()
-        m2._load_properties(m2.CLASS_ID, s)
+        m2._load_properties(m2.CLASS_ID, s, 0)
         assert m2.properties == m.properties
 
     def test_load_properties__some_missing(self):
@@ -155,7 +189,7 @@ class test_GenericContent:
         }
         s = m._serialize_properties()
         m2 = Message()
-        m2._load_properties(m2.CLASS_ID, s)
+        m2._load_properties(m2.CLASS_ID, s, 0)
 
     def test_inbound_header(self):
         m = Message()

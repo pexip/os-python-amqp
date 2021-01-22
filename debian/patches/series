@@ -1,4 +1,3 @@
 0001-Remove-PayPal-image-URLs.patch
 0002-Disable-intersphinx-mapping-for-now.patch
-0010-remove-broken-test.patch
-Always_treat_SSLError_timeouts_as_socket_timeouts.patch
+0003-remove-broken-test.patch

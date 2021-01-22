@@ -3,3 +3,7 @@ amqp.egg-info/SOURCES.txt
 amqp.egg-info/top_level.txt
 funtests/settings.pyc
 .cache/
+.pytest_cache/README.md
+.pytest_cache/CACHEDIR.TAG
+.pytest_cache/v/cache/nodeids
+.pytest_cache/v/cache/stepwise

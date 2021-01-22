@@ -1,11 +1,18 @@
-Description: Removes broken test
-Author: Thomas Goirand <zigo@debian.org>
-Forwarded: no
-Last-Update: 2019-01-22
+From: Thomas Goirand <zigo@debian.org>
+Date: Tue, 23 Jul 2019 21:20:07 +0200
+Subject: Removes broken test
 
---- python-amqp-2.4.0.orig/t/integration/test_integration.py
-+++ python-amqp-2.4.0/t/integration/test_integration.py
-@@ -184,38 +184,6 @@ class test_connection:
+Forwarded: no
+Last-Update: 2019-03-20
+---
+ t/integration/test_integration.py | 32 --------------------------------
+ 1 file changed, 32 deletions(-)
+
+Index: python-amqp/t/integration/test_integration.py
+===================================================================
+--- python-amqp.orig/t/integration/test_integration.py
++++ python-amqp/t/integration/test_integration.py
+@@ -188,38 +188,6 @@ class test_connection:
                  'guest', 'guest'
              ).start(conn).decode('utf-8', 'surrogatepass')
  
@@ -18,7 +25,7 @@ Last-Update: 2019-01-22
 -                        DataComparator(
 -                            'FsSs',
 -                            (
--                                CLIENT_CAPABILITIES, 'AMQPLAIN',
+-                                CLIENT_PROPERTIES, 'AMQPLAIN',
 -                                security_mechanism,
 -                                'en_US'
 -                            )
@@ -40,7 +47,7 @@ Last-Update: 2019-01-22
 -                    )
 -                ]
 -            )
--
-     def test_connection_close(self):
-         # Test checking closing connection
-         frame_writer_cls_mock = Mock()
+-            assert conn.client_properties == CLIENT_PROPERTIES
+ 
+     def test_connect_no_capabilities(self):
+         # Test checking connection handshake with broker
