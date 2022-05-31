@@ -1,6 +1,5 @@
-from __future__ import absolute_import, unicode_literals
+from unittest.mock import Mock
 
-from case import Mock
 import pytest
 
 import amqp.exceptions
@@ -29,7 +28,7 @@ class test_AMQPError:
 
     @pytest.mark.parametrize("amqp_exception", AMQP_EXCEPTIONS)
     def test_str_subclass(self, amqp_exception):
-        exp = '<{}: unknown error>'.format(amqp_exception)
+        exp = f'<{amqp_exception}: unknown error>'
         exception_class = getattr(amqp.exceptions, amqp_exception)
         assert str(exception_class()) == exp
 

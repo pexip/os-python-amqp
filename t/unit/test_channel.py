@@ -1,16 +1,17 @@
-from __future__ import absolute_import, unicode_literals
+import socket
+from struct import pack
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
-import socket
-from case import ContextMock, Mock, patch, ANY, MagicMock
+from case import ContextMock
+from vine import promise
 
 from amqp import spec
 from amqp.basic_message import Message
-from amqp.platform import pack
-from amqp.serialization import dumps
 from amqp.channel import Channel
-from amqp.exceptions import ConsumerCancelled, NotFound, MessageNacked, \
-    RecoverableConnectionError
+from amqp.exceptions import (ConsumerCancelled, MessageNacked, NotFound,
+                             RecoverableConnectionError)
+from amqp.serialization import dumps
 
 
 class test_Channel:
@@ -86,6 +87,7 @@ class test_Channel:
             (30, 'text', spec.Queue.Declare[0], spec.Queue.Declare[1]),
             wait=spec.Channel.CloseOk,
         )
+        assert self.c.is_closing is False
         assert self.c.connection is None
 
     def test_on_close(self):
@@ -145,12 +147,10 @@ class test_Channel:
         )
 
     def test_exchange_declare__auto_delete(self):
-        with patch('amqp.channel.warn') as warn:
-            self.c.exchange_declare(
-                'foo', 'direct', False, True,
-                auto_delete=True, nowait=False, arguments={'x': 1},
-            )
-            warn.assert_called()
+        self.c.exchange_declare(
+            'foo', 'direct', False, True,
+            auto_delete=True, nowait=False, arguments={'x': 1},
+        )
 
     def test_exchange_delete(self):
         self.c.exchange_delete('foo')
@@ -293,7 +293,7 @@ class test_Channel:
     def test_basic_consume_no_consumer_tag(self):
         callback = Mock()
         self.c.send_method.return_value = (123,)
-        self.c.basic_consume(
+        ret = self.c.basic_consume(
             'q', arguments={'x': 1},
             callback=callback,
         )
@@ -304,10 +304,13 @@ class test_Channel:
             returns_tuple=True
         )
         assert self.c.callbacks[123] is callback
+        assert ret == 123
 
     def test_basic_consume_no_wait(self):
         callback = Mock()
-        self.c.basic_consume(
+        ret_promise = promise()
+        self.c.send_method.return_value = ret_promise
+        ret = self.c.basic_consume(
             'q', 123, arguments={'x': 1},
             callback=callback, nowait=True
         )
@@ -318,6 +321,7 @@ class test_Channel:
             returns_tuple=True
         )
         assert self.c.callbacks[123] is callback
+        assert ret == ret_promise
 
     def test_basic_consume_no_wait_no_consumer_tag(self):
         callback = Mock()
@@ -399,7 +403,9 @@ class test_Channel:
         self.c._basic_publish.assert_called_with(1, 2, arg=1)
         assert ret is self.c._basic_publish()
         self.c.wait.assert_called_with(
-            [spec.Basic.Ack, spec.Basic.Nack], callback=ANY
+            [spec.Basic.Ack, spec.Basic.Nack],
+            callback=ANY,
+            timeout=None
         )
         self.c.basic_publish_confirm(1, 2, arg=1)
 
@@ -456,6 +462,31 @@ class test_Channel:
             'capabilities': {
                 'connection.blocked': False
             }
+        }
+        self.c._basic_publish('msg', 'ex', 'rkey')
+        self.conn.drain_events.assert_not_called()
+        self.c.send_method.assert_called_once_with(
+            spec.Basic.Publish, 'Bssbb',
+            (0, 'ex', 'rkey', False, False), 'msg',
+        )
+
+    def test_basic_publish_connection_blocked_not_supported_missing(self):
+        # Test veryfying that when server does not have
+        # connection.blocked capability, drain_events() are not called
+        self.conn.client_properties = {
+            'capabilities': {}
+        }
+        self.c._basic_publish('msg', 'ex', 'rkey')
+        self.conn.drain_events.assert_not_called()
+        self.c.send_method.assert_called_once_with(
+            spec.Basic.Publish, 'Bssbb',
+            (0, 'ex', 'rkey', False, False), 'msg',
+        )
+
+    def test_basic_publish_connection_blocked_no_capabilities(self):
+        # Test veryfying that when server does not have
+        # support of capabilities, drain_events() are not called
+        self.conn.client_properties = {
         }
         self.c._basic_publish('msg', 'ex', 'rkey')
         self.conn.drain_events.assert_not_called()

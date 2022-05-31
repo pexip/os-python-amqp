@@ -1,12 +1,11 @@
 """Platform compatibility."""
-from __future__ import absolute_import, unicode_literals
 
 import platform
 import re
-import struct
 import sys
-
 # Jython does not have this attribute
+import typing
+
 try:
     from socket import SOL_TCP
 except ImportError:  # pragma: no cover
@@ -16,13 +15,11 @@ except ImportError:  # pragma: no cover
 RE_NUM = re.compile(r'(\d+).+')
 
 
-def _linux_version_to_tuple(s):
-    # type: (str) -> Tuple[int, int, int]
+def _linux_version_to_tuple(s: str) -> typing.Tuple[int, int, int]:
     return tuple(map(_versionatom, s.split('.')[:3]))
 
 
-def _versionatom(s):
-    # type: (str) -> int
+def _versionatom(s: str) -> int:
     if s.isdigit():
         return int(s)
     match = RE_NUM.match(s)
@@ -48,6 +45,7 @@ if sys.platform.startswith('linux'):
     if platform.release().endswith("Microsoft"):
         KNOWN_TCP_OPTS = {'TCP_NODELAY', 'TCP_KEEPIDLE', 'TCP_KEEPINTVL',
                           'TCP_KEEPCNT'}
+
 elif sys.platform.startswith('darwin'):
     KNOWN_TCP_OPTS.remove('TCP_USER_TIMEOUT')
 
@@ -59,31 +57,21 @@ elif 'bsd' in sys.platform:
 elif sys.platform.startswith('win'):
     KNOWN_TCP_OPTS = {'TCP_NODELAY'}
 
-if sys.version_info < (2, 7, 7):  # pragma: no cover
-    import functools
+elif sys.platform.startswith('cygwin'):
+    KNOWN_TCP_OPTS = {'TCP_NODELAY'}
 
-    def _to_bytes_arg(fun):
-        @functools.wraps(fun)
-        def _inner(s, *args, **kwargs):
-            return fun(s.encode(), *args, **kwargs)
-        return _inner
+    # illumos does not allow to set the TCP_MAXSEG socket option,
+    # even if the Oracle documentation says otherwise.
+elif sys.platform.startswith('sunos'):
+    KNOWN_TCP_OPTS.remove('TCP_MAXSEG')
 
-    pack = _to_bytes_arg(struct.pack)
-    pack_into = _to_bytes_arg(struct.pack_into)
-    unpack = _to_bytes_arg(struct.unpack)
-    unpack_from = _to_bytes_arg(struct.unpack_from)
-else:
-    pack = struct.pack
-    pack_into = struct.pack_into
-    unpack = struct.unpack
-    unpack_from = struct.unpack_from
-
-__all__ = [
+# aix does not allow to set the TCP_MAXSEG
+# or the TCP_USER_TIMEOUT socket options.
+elif sys.platform.startswith('aix'):
+    KNOWN_TCP_OPTS.remove('TCP_MAXSEG')
+    KNOWN_TCP_OPTS.remove('TCP_USER_TIMEOUT')
+__all__ = (
     'LINUX_VERSION',
     'SOL_TCP',
     'KNOWN_TCP_OPTS',
-    'pack',
-    'pack_into',
-    'unpack',
-    'unpack_from',
-]
+)
