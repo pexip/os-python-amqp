@@ -1,30 +1,23 @@
 """AMQP Channels."""
 # Copyright (C) 2007-2008 Barry Pederson <bp@barryp.org>
-from __future__ import absolute_import, unicode_literals
 
 import logging
 import socket
 from collections import defaultdict
-from warnings import warn
+from queue import Queue
 
 from vine import ensure_promise
 
 from . import spec
 from .abstract_channel import AbstractChannel
-from .exceptions import (ChannelError, ConsumerCancelled,
+from .exceptions import (ChannelError, ConsumerCancelled, MessageNacked,
                          RecoverableChannelError, RecoverableConnectionError,
-                         error_for_code, MessageNacked)
-from .five import Queue
+                         error_for_code)
 from .protocol import queue_declare_ok_t
 
-__all__ = ['Channel']
+__all__ = ('Channel',)
 
 AMQP_LOGGER = logging.getLogger('amqp')
-
-EXCHANGE_AUTODELETE_DEPRECATED = """\
-The auto_delete flag for exchanges has been deprecated and will be removed
-from py-amqp v1.5.0.\
-"""
 
 REJECTED_MESSAGE_WITHOUT_CALLBACK = """\
 Rejecting message with delivery tag %r for reason of having no callbacks.
@@ -97,6 +90,10 @@ class Channel(AbstractChannel):
     }
     _METHODS = {m.method_sig: m for m in _METHODS}
 
+    _ALLOWED_METHODS_WHEN_CLOSING = (
+        spec.Channel.Close, spec.Channel.CloseOk
+    )
+
     def __init__(self, connection,
                  channel_id=None, auto_decode=True, on_open=None):
         if channel_id:
@@ -106,7 +103,7 @@ class Channel(AbstractChannel):
 
         AMQP_LOGGER.debug('using channel_id: %s', channel_id)
 
-        super(Channel, self).__init__(connection, channel_id)
+        super().__init__(connection, channel_id)
 
         self.is_open = False
         self.active = True  # Flow control
@@ -211,12 +208,11 @@ class Channel(AbstractChannel):
                 is the ID of the method.
         """
         try:
-            is_closed = (
-                not self.is_open or
-                self.connection is None or
-                self.connection.channels is None
-            )
-            if is_closed:
+            if self.connection is None:
+                return
+            if self.connection.channels is None:
+                return
+            if not self.is_open:
                 return
 
             self.is_closing = True
@@ -609,9 +605,6 @@ class Channel(AbstractChannel):
                 implementation.  This field is ignored if passive is
                 True.
         """
-        if auto_delete:
-            warn(VDeprecationWarning(EXCHANGE_AUTODELETE_DEPRECATED))
-
         self.send_method(
             spec.Exchange.Declare, argsig,
             (0, exchange, type, passive, durable, auto_delete,
@@ -1591,7 +1584,11 @@ class Channel(AbstractChannel):
             self.cancel_callbacks[consumer_tag] = on_cancel
         if no_ack:
             self.no_ack_consumers.add(consumer_tag)
-        return p
+
+        if not nowait:
+            return consumer_tag
+        else:
+            return p
 
     def _on_basic_deliver(self, consumer_tag, delivery_tag, redelivered,
                           exchange, routing_key, msg):
@@ -1677,6 +1674,7 @@ class Channel(AbstractChannel):
 
     def _basic_publish(self, msg, exchange='', routing_key='',
                        mandatory=False, immediate=False, timeout=None,
+                       confirm_timeout=None,
                        argsig='Bssbb'):
         """Publish a message.
 
@@ -1686,9 +1684,11 @@ class Channel(AbstractChannel):
         transaction, if any, is committed.
 
         When channel is in confirm mode (when Connection parameter
-        confirm_publish is set to True), each message is confirmed. When
-        broker rejects published message (e.g. due internal broker
-        constrains), MessageNacked exception is raised.
+        confirm_publish is set to True), each message is confirmed.
+        When broker rejects published message (e.g. due internal broker
+        constrains), MessageNacked exception is raised and
+        set confirm_timeout to wait maximum confirm_timeout second
+        for message to confirm.
 
         PARAMETERS:
             exchange: shortstr
@@ -1746,13 +1746,30 @@ class Channel(AbstractChannel):
                 RULE:
 
                     The server SHOULD implement the immediate flag.
+
+            timeout: short
+
+                timeout for publish
+
+                Set timeout to wait maximum timeout second
+                for message to publish.
+
+            confirm_timeout: short
+
+                confirm_timeout for publish in confirm mode
+
+                When the channel is in confirm mode set
+                confirm_timeout to wait maximum confirm_timeout
+                second for message to confirm.
+
         """
         if not self.connection:
             raise RecoverableConnectionError(
                 'basic_publish: connection closed')
 
-        client_properties = self.connection.client_properties
-        if client_properties['capabilities']['connection.blocked']:
+        capabilities = self.connection. \
+            client_properties.get('capabilities', {})
+        if capabilities.get('connection.blocked', False):
             try:
                 # Check if an event was sent, such as the out of memory message
                 self.connection.drain_events(timeout=0)
@@ -1767,9 +1784,11 @@ class Channel(AbstractChannel):
                 )
         except socket.timeout:
             raise RecoverableChannelError('basic_publish: timed out')
+
     basic_publish = _basic_publish
 
     def basic_publish_confirm(self, *args, **kwargs):
+        confirm_timeout = kwargs.pop('confirm_timeout', None)
 
         def confirm_handler(method, *args):
             # When RMQ nacks message we are raising MessageNacked exception
@@ -1781,7 +1800,10 @@ class Channel(AbstractChannel):
             self.confirm_select()
         ret = self._basic_publish(*args, **kwargs)
         # Waiting for confirmation of message.
-        self.wait([spec.Basic.Ack, spec.Basic.Nack], callback=confirm_handler)
+        timeout = confirm_timeout or kwargs.get('timeout', None)
+        self.wait([spec.Basic.Ack, spec.Basic.Nack],
+                  callback=confirm_handler,
+                  timeout=timeout)
         return ret
 
     def basic_qos(self, prefetch_size, prefetch_count, a_global,
@@ -1842,11 +1864,16 @@ class Channel(AbstractChannel):
 
             a_global: boolean
 
-                apply to entire connection
+                Defines a scope of QoS. Semantics of this parameter differs
+                between AMQP 0-9-1 standard and RabbitMQ broker:
 
-                By default the QoS settings apply to the current
-                channel only.  If this field is set, they are applied
-                to the entire connection.
+                MEANING IN AMQP 0-9-1:
+                    False:  shared across all consumers on the channel
+                    True:   shared across all consumers on the connection
+                MEANING IN RABBITMQ:
+                    False:  applied separately to each new consumer
+                            on the channel
+                    True:   shared across all consumers on the channel
         """
         return self.send_method(
             spec.Basic.Qos, argsig, (prefetch_size, prefetch_count, a_global),

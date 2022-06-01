@@ -1,15 +1,15 @@
-from __future__ import absolute_import, unicode_literals
-
+import re
 import socket
 import warnings
+from unittest.mock import Mock, call, patch
 
 import pytest
-from case import ContextMock, Mock, call, patch
+from case import ContextMock
 
 from amqp import Connection, spec
 from amqp.connection import SSLError
-from amqp.exceptions import ConnectionError, NotFound, ResourceError
-from amqp.five import items
+from amqp.exceptions import (ConnectionError, NotFound,
+                             RecoverableConnectionError, ResourceError)
 from amqp.sasl import AMQPLAIN, EXTERNAL, GSSAPI, PLAIN, SASL
 from amqp.transport import TCPTransport
 
@@ -317,7 +317,7 @@ class test_Connection:
         transport = self.conn.transport
         self.conn.collect()
         transport.close.assert_called_with()
-        for i, channel in items(channels):
+        for i, channel in channels.items():
             if i:
                 channel.collect.assert_called_with()
         assert self.conn._transport is None
@@ -355,6 +355,12 @@ class test_Connection:
         self.conn.Channel.assert_called_with(self.conn, 3, on_open=callback)
         c2 = self.conn.channel(3, callback)
         assert c2 is c
+
+    def test_channel_when_connection_is_closed(self):
+        self.conn.collect()
+        callback = Mock(name='callback')
+        with pytest.raises(RecoverableConnectionError):
+            self.conn.channel(3, callback)
 
     def test_is_alive(self):
         with pytest.raises(NotImplementedError):
@@ -416,6 +422,11 @@ class test_Connection:
         self.conn.channels[1].dispatch_method.assert_called_with(
             (50, 60), 'payload', 'content',
         )
+
+    def test_on_inbound_method_when_connection_is_closed(self):
+        self.conn.collect()
+        with pytest.raises(RecoverableConnectionError):
+            self.conn.on_inbound_method(1, (50, 60), 'payload', 'content')
 
     def test_close(self):
         self.conn.collect = Mock(name='collect')
@@ -491,3 +502,35 @@ class test_Connection:
     def test_server_capabilities(self):
         self.conn.server_properties['capabilities'] = {'foo': 1}
         assert self.conn.server_capabilities == {'foo': 1}
+
+    @pytest.mark.parametrize(
+        'conn_kwargs,expected_vhost', [
+            ({}, '/'),
+            ({'user_id': 'test_user', 'password': 'test_pass'}, '/'),
+            ({'virtual_host': 'test_vhost'}, 'test_vhost')
+        ]
+    )
+    def test_repr_disconnected(self, conn_kwargs, expected_vhost):
+        assert re.fullmatch(
+            r'<AMQP Connection: broker.com:1234/{} '
+            r'\(disconnected\) at 0x.*>'.format(expected_vhost),
+            repr(Connection(host='broker.com:1234', **conn_kwargs))
+        )
+
+    @pytest.mark.parametrize(
+        'conn_kwargs,expected_vhost', [
+            ({}, '/'),
+            ({'user_id': 'test_user', 'password': 'test_pass'}, '/'),
+            ({'virtual_host': 'test_vhost'}, 'test_vhost')
+        ]
+    )
+    def test_repr_connected(self, conn_kwargs, expected_vhost):
+        c = Connection(host='broker.com:1234', **conn_kwargs)
+        c._transport = Mock(name='transport')
+        assert re.fullmatch(
+            r'<AMQP Connection: broker.com:1234/{} using {} at 0x.*>'.format(
+                expected_vhost,
+                repr(c.transport)
+            ),
+            repr(c)
+        )

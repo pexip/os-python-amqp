@@ -10,7 +10,6 @@ amqp/basic_message.py
 amqp/channel.py
 amqp/connection.py
 amqp/exceptions.py
-amqp/five.py
 amqp/method_framing.py
 amqp/platform.py
 amqp/protocol.py
@@ -40,7 +39,6 @@ docs/reference/amqp.basic_message.rst
 docs/reference/amqp.channel.rst
 docs/reference/amqp.connection.rst
 docs/reference/amqp.exceptions.rst
-docs/reference/amqp.five.rst
 docs/reference/amqp.method_framing.rst
 docs/reference/amqp.platform.rst
 docs/reference/amqp.protocol.rst
@@ -59,7 +57,9 @@ requirements/test-ci.txt
 requirements/test.txt
 t/__init__.py
 t/integration/__init__.py
+t/integration/conftest.py
 t/integration/test_integration.py
+t/integration/test_rmq.py
 t/unit/__init__.py
 t/unit/test_abstract_channel.py
 t/unit/test_basic_message.py

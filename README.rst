@@ -4,7 +4,7 @@
 
 |build-status| |coverage| |license| |wheel| |pyversion| |pyimp|
 
-:Version: 2.4.0
+:Version: 5.0.3
 :Web: https://amqp.readthedocs.io/
 :Download: https://pypi.org/project/amqp/
 :Source: http://github.com/celery/py-amqp/
@@ -82,6 +82,79 @@ Differences from `amqplib`_
   that set the no_ack flag.
 - Slightly better at error recovery
 
+Quick overview
+==============
+
+Simple producer publishing messages to ``test`` queue using default exchange:
+
+.. code:: python
+
+    import amqp
+
+    with amqp.Connection('broker.example.com') as c:
+        ch = c.channel()
+        ch.basic_publish(amqp.Message('Hello World'), routing_key='test')
+
+Producer publishing to ``test_exchange`` exchange with publisher confirms enabled and using virtual_host ``test_vhost``:
+
+.. code:: python
+
+    import amqp
+
+    with amqp.Connection(
+        'broker.example.com', exchange='test_exchange',
+        confirm_publish=True, virtual_host='test_vhost'
+    ) as c:
+        ch = c.channel()
+        ch.basic_publish(amqp.Message('Hello World'), routing_key='test')
+
+Consumer with acknowledgments enabled:
+
+.. code:: python
+
+    import amqp
+
+    with amqp.Connection('broker.example.com') as c:
+        ch = c.channel()
+        def on_message(message):
+            print('Received message (delivery tag: {}): {}'.format(message.delivery_tag, message.body))
+            ch.basic_ack(message.delivery_tag)
+        ch.basic_consume(queue='test', callback=on_message)
+        while True:
+            c.drain_events()
+
+
+Consumer with acknowledgments disabled:
+
+.. code:: python
+
+    import amqp
+
+    with amqp.Connection('broker.example.com') as c:
+        ch = c.channel()
+        def on_message(message):
+            print('Received message (delivery tag: {}): {}'.format(message.delivery_tag, message.body))
+        ch.basic_consume(queue='test', callback=on_message, no_ack=True)
+        while True:
+            c.drain_events()
+
+Speedups
+========
+
+This library has **experimental** support of speedups. Speedups are implemented using Cython. To enable speedups, ``CELERY_ENABLE_SPEEDUPS`` environment variable must be set during building/installation.
+Currently speedups can be installed:
+
+1. using source package (using ``--no-binary`` switch):
+
+.. code-block::
+CELERY_ENABLE_SPEEDUPS=true pip install --no-binary :all: amqp
+
+
+2. building directly source code:
+
+.. code-block::
+CELERY_ENABLE_SPEEDUPS=true python setup.py install
+
 Further
 =======
 
@@ -105,9 +178,9 @@ Further
 
     http://www.rabbitmq.com/devtools.html#python-dev
 
-.. |build-status| image:: https://secure.travis-ci.org/celery/py-amqp.png?branch=master
+.. |build-status| image:: https://api.travis-ci.com/celery/py-amqp.png?branch=master
     :alt: Build status
-    :target: https://travis-ci.org/celery/py-amqp
+    :target: https://travis-ci.com/celery/py-amqp
 
 .. |coverage| image:: https://codecov.io/github/celery/py-amqp/coverage.svg?branch=master
     :target: https://codecov.io/github/celery/py-amqp?branch=master
@@ -127,4 +200,9 @@ Further
 .. |pyimp| image:: https://img.shields.io/pypi/implementation/amqp.svg
     :alt: Support Python implementations.
     :target: https://pypi.org/project/amqp/
+    
+py-amqp as part of the Tidelift Subscription
+=======
+
+The maintainers of py-amqp and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. [Learn more.](https://tidelift.com/subscription/pkg/pypi-amqp?utm_source=pypi-amqp&utm_medium=referral&utm_campaign=readme&utm_term=repo)
 
