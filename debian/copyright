@@ -28,7 +28,7 @@ Comment: See https://github.com/celery/py-amqp/issues/82
 
 
 Files: debian/*
-Copyright: 2013-2015, Michael Fladischer <fladi@debian.org>
+Copyright: 2013-2022, Michael Fladischer <fladi@debian.org>
  2017 Christopher Hoskin <mans0954@debian.org>
 License: LGPL-2.1+
 

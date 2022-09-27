@@ -1,10 +1,10 @@
 import re
 import socket
 import warnings
+from array import array
 from unittest.mock import Mock, call, patch
 
 import pytest
-from case import ContextMock
 
 from amqp import Connection, spec
 from amqp.connection import SSLError
@@ -12,6 +12,8 @@ from amqp.exceptions import (ConnectionError, NotFound,
                              RecoverableConnectionError, ResourceError)
 from amqp.sasl import AMQPLAIN, EXTERNAL, GSSAPI, PLAIN, SASL
 from amqp.transport import TCPTransport
+
+from t.mocks import ContextMock
 
 
 class test_Connection:
@@ -322,10 +324,17 @@ class test_Connection:
                 channel.collect.assert_called_with()
         assert self.conn._transport is None
 
-    def test_collect__channel_raises_socket_error(self):
-        self.conn.channels = self.conn.channels = {1: Mock(name='c1')}
-        self.conn.channels[1].collect.side_effect = socket.error()
+    def test_collect__transport_socket_raises_os_error(self):
+        self.conn.transport = TCPTransport('localhost:5672')
+        sock = self.conn.transport.sock = Mock(name='sock')
+        channel = Mock(name='c1')
+        self.conn.channels = {1: channel}
+        sock.shutdown.side_effect = OSError
         self.conn.collect()
+        channel.collect.assert_called_with()
+        sock.close.assert_called_with()
+        assert self.conn._transport is None
+        assert self.conn.channels is None
 
     def test_collect_no_transport(self):
         self.conn = Connection()
@@ -339,8 +348,14 @@ class test_Connection:
         self.conn.collect()
         self.conn.collect()
 
-    def test_get_free_channel_id__raises_IndexError(self):
-        self.conn._avail_channel_ids = []
+    def test_get_free_channel_id(self):
+        assert self.conn._get_free_channel_id() == 1
+        assert self.conn._get_free_channel_id() == 2
+
+    def test_get_free_channel_id__raises_ResourceError(self):
+        self.conn.channel_max = 2
+        self.conn._get_free_channel_id()
+        self.conn._get_free_channel_id()
         with pytest.raises(ResourceError):
             self.conn._get_free_channel_id()
 

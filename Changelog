@@ -5,6 +5,103 @@ py-amqp is fork of amqplib used by Kombu containing additional features and impr
 The previous amqplib changelog is here:
 http://code.google.com/p/py-amqplib/source/browse/CHANGES
 
+.. _version-5.1.1:
+
+5.1.1
+=====
+:release-date: 2022-03-06 12:45 P.M. UTC+6:00
+:release-by: Asif Saif Uddin
+
+- Use AF_UNSPEC for name resolution (#389).
+
+
+.. _version-5.1.0:
+
+5.1.0
+=====
+:release-date: 2022-03-06 10:05 A.M. UTC+6:00
+:release-by: Asif Saif Uddin
+
+- Improve performance of _get_free_channel_id, fix channel max bug (#385).
+- Document memoryview usage, minor frame_writer.write_frame refactor (#384).
+- Start dropping python 3.6 (#387).
+- Added experimental __slots__ to some classes (#368)
+- Relaxed vine version for upcoming release.
+- Upgraded topytest 7 (#388).
+
+
+.. _version-5.0.9:
+
+5.0.9
+=====
+:release-date: 2021-12-20 11:00 A.M. UTC+6:00
+:release-by: Asif Saif Uddin
+
+- Append to _used_channel_ids in _used_channel_ids
+
+
+.. _version-5.0.8:
+
+5.0.8
+=====
+:release-date: 2021-12-19 11:15 A.M. UTC+6:00
+:release-by: Asif Saif Uddin
+
+- Reduce memory usage of Connection (#377)
+- Add additional error handling around code where an OSError 
+  may be raised on failed connections. Fixes (#378)
+
+
+.. _version-5.0.7:
+
+5.0.7
+=====
+:release-date: 2021-12-13 15:45 P.M. UTC+6:00
+:release-by: Asif Saif Uddin
+
+- Remove dependency to case
+- Bugfix: not closing socket after server disconnect 
+
+
+.. _version-5.0.6:
+
+5.0.6
+=====
+:release-date: 2021-04-01 10:45 A.M. UTC+6:00
+:release-by: Asif Saif Uddin
+
+- Change the order in which context.check_hostname and context.verify_mode get set
+  in SSLTransport._wrap_socket_sni. Fixes bug introduced in 5.0.3 where setting
+  context.verify_mode = ssl.CERT_NONE would raise
+  "ValueError: Cannot set verify_mode to CERT_NONE when check_hostname is enabled."
+  Setting context.check_hostname prior to setting context.verify_mode resolves the
+  issue.
+- Remove TCP_USER_TIMEOUT option for Solaris (#355) 
+- Pass long_description to setup() (#353)
+- Fix for tox-docker 2.0
+- Moved to GitHub actions CI (#359)
+
+.. _version-5.0.5:
+
+5.0.5
+=====
+:release-date: 2021-01-28 4:30 P.M UTC+6:00
+:release-by: Asif Saif Uddin
+
+-  Removed mistakenly introduced code which was causing import errors
+
+
+
+.. _version-5.0.4:
+
+5.0.4
+=====
+:release-date: 2021-01-28 2:30 P.M UTC+6:00
+:release-by: Asif Saif Uddin
+
+-  Add missing load_default_certs() call to fix a regression in v5.0.3 release. (#350)
+
+
 .. _version-5.0.3:
 
 5.0.3
@@ -128,7 +225,7 @@ Code Cleanups & Improvements:
 :release-by: Asif Saif Uddin
 
 - Fix buffer overflow in frame_writer after frame_max is increased. `frame_writer`
-allocates a `bytearray` on intialization with a length based on the `connection.frame_max`
+allocates a `bytearray` on initialization with a length based on the `connection.frame_max`
 value. If `connection.frame_max` is changed to a larger value, this causes an
 error like `pack_into requires a buffer of at least 408736 bytes`.
 

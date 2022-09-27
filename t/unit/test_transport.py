@@ -1,6 +1,7 @@
 import errno
 import os
 import re
+import ssl
 import socket
 import struct
 from struct import pack
@@ -281,6 +282,13 @@ class test_AbstractTransport:
         self.t.close()
         assert self.t.sock is None and self.t.connected is False
 
+    def test_close_os_error(self):
+        sock = self.t.sock = Mock()
+        sock.shutdown.side_effect = OSError
+        self.t.close()
+        sock.close.assert_called_with()
+        assert self.t.sock is None and self.t.connected is False
+
     def test_read_frame__timeout(self):
         self.t._read = Mock()
         self.t._read.side_effect = socket.timeout()
@@ -512,53 +520,19 @@ class test_AbstractTransport_connect:
                               side_effect=(socket.error, None)):
                 self.t.connect()
 
-    def test_connect_short_curcuit_on_INET_succeed(self):
+    def test_connect_calls_getaddrinfo_with_af_unspec(self):
         with patch('socket.socket', return_value=MockSocket()), \
-            patch('socket.getaddrinfo',
-                  side_effect=[
-                      [(socket.AF_INET, 1, socket.IPPROTO_TCP,
-                        '', ('127.0.0.1', 5672))],
-                      [(socket.AF_INET6, 1, socket.IPPROTO_TCP,
-                        '', ('::1', 5672))]
-                  ]) as getaddrinfo:
+            patch('socket.getaddrinfo') as getaddrinfo:
             self.t.sock = Mock()
             self.t.close()
             self.t.connect()
             getaddrinfo.assert_called_with(
-                'localhost', 5672, socket.AF_INET, ANY, ANY)
-
-    def test_connect_short_curcuit_on_INET_fails(self):
-        with patch('socket.socket', return_value=MockSocket()) as sock_mock, \
-            patch('socket.getaddrinfo',
-                  side_effect=[
-                      [(socket.AF_INET, 1, socket.IPPROTO_TCP,
-                        '', ('127.0.0.1', 5672))],
-                      [(socket.AF_INET6, 1, socket.IPPROTO_TCP,
-                        '', ('::1', 5672))]
-                  ]) as getaddrinfo:
-            self.t.sock = Mock()
-            self.t.close()
-            with patch.object(sock_mock.return_value, 'connect',
-                              side_effect=(socket.error, None)):
-                self.t.connect()
-            getaddrinfo.assert_has_calls(
-                [call('localhost', 5672, addr_type, ANY, ANY)
-                 for addr_type in (socket.AF_INET, socket.AF_INET6)])
+                'localhost', 5672, socket.AF_UNSPEC, ANY, ANY)
 
     def test_connect_getaddrinfo_raises_gaierror(self):
         with patch('socket.getaddrinfo', side_effect=socket.gaierror):
             with pytest.raises(socket.error):
                 self.t.connect()
-
-    def test_connect_getaddrinfo_raises_gaierror_once_recovers(self):
-        with patch('socket.socket', return_value=MockSocket()), \
-            patch('socket.getaddrinfo',
-                  side_effect=[
-                      socket.gaierror,
-                      [(socket.AF_INET6, 1, socket.IPPROTO_TCP,
-                        '', ('::1', 5672))]
-                  ]):
-            self.t.connect()
 
     def test_connect_survives_not_implemented_set_cloexec(self):
         with patch('socket.socket', return_value=MockSocket()), \
@@ -578,6 +552,16 @@ class test_AbstractTransport_connect:
         sock_obj = self.t.sock
         self.t.connect()
         assert self.t.connected and self.t.sock is sock_obj
+
+    def test_close__close_error(self):
+        # sock.close() can raise an error if the fd is invalid
+        # make sure the socket is properly deallocated
+        sock = self.t.sock = Mock()
+        sock.unwrap.return_value = sock
+        sock.close.side_effect = OSError
+        self.t.close()
+        sock.close.assert_called_with()
+        assert self.t.sock is None and self.t.connected is False
 
 
 class test_SSLTransport:
@@ -639,112 +623,185 @@ class test_SSLTransport:
 
     def test_wrap_socket_sni(self):
         # testing default values of _wrap_socket_sni()
-        sock = Mock()
         with patch('ssl.SSLContext') as mock_ssl_context_class:
-            wrap_socket_method_mock = mock_ssl_context_class().wrap_socket
-            wrap_socket_method_mock.return_value = sentinel.WRAPPED_SOCKET
+            sock = Mock()
+            context = mock_ssl_context_class()
+            context.wrap_socket.return_value = sentinel.WRAPPED_SOCKET
             ret = self.t._wrap_socket_sni(sock)
 
-        mock_ssl_context_class.load_cert_chain.assert_not_called()
-        mock_ssl_context_class.load_verify_locations.assert_not_called()
-        mock_ssl_context_class.set_ciphers.assert_not_called()
-        mock_ssl_context_class.verify_mode.assert_not_called()
-        wrap_socket_method_mock.assert_called_with(
-            sock=sock,
-            server_side=False,
-            do_handshake_on_connect=False,
-            suppress_ragged_eofs=True,
-            server_hostname=None
-        )
-        assert ret == sentinel.WRAPPED_SOCKET
+            context.load_cert_chain.assert_not_called()
+            context.load_verify_locations.assert_not_called()
+            context.set_ciphers.assert_not_called()
+            context.verify_mode.assert_not_called()
+
+            context.load_default_certs.assert_called_with(
+                ssl.Purpose.SERVER_AUTH
+            )
+            context.wrap_socket.assert_called_with(
+                sock=sock,
+                server_side=False,
+                do_handshake_on_connect=False,
+                suppress_ragged_eofs=True,
+                server_hostname=None
+            )
+            assert ret == sentinel.WRAPPED_SOCKET
 
     def test_wrap_socket_sni_certfile(self):
         # testing _wrap_socket_sni() with parameters certfile and keyfile
         with patch('ssl.SSLContext') as mock_ssl_context_class:
-            load_cert_chain_method_mock = \
-                mock_ssl_context_class().load_cert_chain
+            sock = Mock()
+            context = mock_ssl_context_class()
             self.t._wrap_socket_sni(
-                Mock(), keyfile=sentinel.KEYFILE, certfile=sentinel.CERTFILE
+                sock, keyfile=sentinel.KEYFILE, certfile=sentinel.CERTFILE
             )
 
-        load_cert_chain_method_mock.assert_called_with(
-            sentinel.CERTFILE, sentinel.KEYFILE
-        )
+            context.load_default_certs.assert_called_with(
+                ssl.Purpose.SERVER_AUTH
+            )
+            context.load_cert_chain.assert_called_with(
+                sentinel.CERTFILE, sentinel.KEYFILE
+            )
 
     def test_wrap_socket_ca_certs(self):
         # testing _wrap_socket_sni() with parameter ca_certs
         with patch('ssl.SSLContext') as mock_ssl_context_class:
-            load_verify_locations_method_mock = \
-                mock_ssl_context_class().load_verify_locations
-            self.t._wrap_socket_sni(Mock(), ca_certs=sentinel.CA_CERTS)
+            sock = Mock()
+            context = mock_ssl_context_class()
+            self.t._wrap_socket_sni(sock, ca_certs=sentinel.CA_CERTS)
 
-        load_verify_locations_method_mock.assert_called_with(sentinel.CA_CERTS)
+            context.load_default_certs.assert_not_called()
+            context.load_verify_locations.assert_called_with(sentinel.CA_CERTS)
 
     def test_wrap_socket_ciphers(self):
         # testing _wrap_socket_sni() with parameter ciphers
         with patch('ssl.SSLContext') as mock_ssl_context_class:
-            set_ciphers_method_mock = mock_ssl_context_class().set_ciphers
-            self.t._wrap_socket_sni(Mock(), ciphers=sentinel.CIPHERS)
+            sock = Mock()
+            context = mock_ssl_context_class()
+            set_ciphers_method_mock = context.set_ciphers
+            self.t._wrap_socket_sni(sock, ciphers=sentinel.CIPHERS)
 
-        set_ciphers_method_mock.assert_called_with(sentinel.CIPHERS)
+            set_ciphers_method_mock.assert_called_with(sentinel.CIPHERS)
 
     def test_wrap_socket_sni_cert_reqs(self):
-        # testing _wrap_socket_sni() with parameter cert_reqs
         with patch('ssl.SSLContext') as mock_ssl_context_class:
-            self.t._wrap_socket_sni(Mock(), cert_reqs=sentinel.CERT_REQS)
+            sock = Mock()
+            context = mock_ssl_context_class()
+            self.t._wrap_socket_sni(sock, cert_reqs=ssl.CERT_NONE)
 
-        assert mock_ssl_context_class().verify_mode == sentinel.CERT_REQS
+            context.load_default_certs.assert_not_called()
+            assert context.verify_mode == ssl.CERT_NONE
+
+        # testing _wrap_socket_sni() with parameter cert_reqs != ssl.CERT_NONE
+        with patch('ssl.SSLContext') as mock_ssl_context_class:
+            sock = Mock()
+            context = mock_ssl_context_class()
+            self.t._wrap_socket_sni(sock, cert_reqs=sentinel.CERT_REQS)
+
+            context.load_default_certs.assert_called_with(
+                ssl.Purpose.SERVER_AUTH
+            )
+            assert context.verify_mode == sentinel.CERT_REQS
+
+        # testing context creation inside _wrap_socket_sni() with parameter
+        # cert_reqs == ssl.CERT_NONE. Previously raised ValueError because
+        # code path attempted to set context.verify_mode=ssl.CERT_NONE before
+        # setting context.check_hostname = False which raised a ValueError
+        with patch('ssl.SSLContext.wrap_socket') as mock_wrap_socket:
+            with patch('ssl.SSLContext.load_default_certs') as mock_load_default_certs:
+                sock = Mock()
+                self.t._wrap_socket_sni(
+                    sock, server_side=True, cert_reqs=ssl.CERT_NONE
+                )
+                mock_load_default_certs.assert_not_called()
+                mock_wrap_socket.assert_called_once()
+
+        with patch('ssl.SSLContext.wrap_socket') as mock_wrap_socket:
+            with patch('ssl.SSLContext.load_default_certs') as mock_load_default_certs:
+                sock = Mock()
+                self.t._wrap_socket_sni(
+                    sock, server_side=False, cert_reqs=ssl.CERT_NONE
+                )
+                mock_load_default_certs.assert_not_called()
+                mock_wrap_socket.assert_called_once()
+
+        with patch('ssl.SSLContext.wrap_socket') as mock_wrap_socket:
+            with patch('ssl.SSLContext.load_default_certs') as mock_load_default_certs:
+                sock = Mock()
+                self.t._wrap_socket_sni(
+                    sock, server_side=True, cert_reqs=ssl.CERT_REQUIRED
+                )
+                mock_load_default_certs.assert_called_with(ssl.Purpose.CLIENT_AUTH)
+                mock_wrap_socket.assert_called_once()
+
+        with patch('ssl.SSLContext.wrap_socket') as mock_wrap_socket:
+            with patch('ssl.SSLContext.load_default_certs') as mock_load_default_certs:
+                sock = Mock()
+                self.t._wrap_socket_sni(
+                    sock, server_side=False, cert_reqs=ssl.CERT_REQUIRED
+                )
+                mock_load_default_certs.assert_called_once_with(
+                    ssl.Purpose.SERVER_AUTH
+                )
+                mock_wrap_socket.assert_called_once()
 
     def test_wrap_socket_sni_setting_sni_header(self):
         # testing _wrap_socket_sni() without parameter server_hostname
+
         # SSL module supports SNI
         with patch('ssl.SSLContext') as mock_ssl_context_class, \
                 patch('ssl.HAS_SNI', new=True):
-            self.t._wrap_socket_sni(Mock())
+            sock = Mock()
+            context = mock_ssl_context_class()
+            self.t._wrap_socket_sni(sock)
 
-        assert mock_ssl_context_class().check_hostname is False
+            assert context.check_hostname is False
 
         # SSL module does not support SNI
         with patch('ssl.SSLContext') as mock_ssl_context_class, \
                 patch('ssl.HAS_SNI', new=False):
-            self.t._wrap_socket_sni(Mock())
+            sock = Mock()
+            context = mock_ssl_context_class()
+            self.t._wrap_socket_sni(sock)
 
-        assert mock_ssl_context_class().check_hostname is False
+            assert context.check_hostname is False
 
         # testing _wrap_socket_sni() with parameter server_hostname
-        sock = Mock()
+
+        # SSL module supports SNI
         with patch('ssl.SSLContext') as mock_ssl_context_class, \
                 patch('ssl.HAS_SNI', new=True):
-            # SSL module supports SNI
-            wrap_socket_method_mock = mock_ssl_context_class().wrap_socket
+            sock = Mock()
+            context = mock_ssl_context_class()
             self.t._wrap_socket_sni(
                 sock, server_hostname=sentinel.SERVER_HOSTNAME
             )
 
-        wrap_socket_method_mock.assert_called_with(
-            sock=sock,
-            server_side=False,
-            do_handshake_on_connect=False,
-            suppress_ragged_eofs=True,
-            server_hostname=sentinel.SERVER_HOSTNAME
-        )
-        assert mock_ssl_context_class().check_hostname is True
+            context.wrap_socket.assert_called_with(
+                sock=sock,
+                server_side=False,
+                do_handshake_on_connect=False,
+                suppress_ragged_eofs=True,
+                server_hostname=sentinel.SERVER_HOSTNAME
+            )
+            assert context.check_hostname is True
 
+        # SSL module does not support SNI
         with patch('ssl.SSLContext') as mock_ssl_context_class, \
                 patch('ssl.HAS_SNI', new=False):
-            # SSL module does not support SNI
-            wrap_socket_method_mock = mock_ssl_context_class().wrap_socket
+            sock = Mock()
+            context = mock_ssl_context_class()
             self.t._wrap_socket_sni(
                 sock, server_hostname=sentinel.SERVER_HOSTNAME
             )
-        wrap_socket_method_mock.assert_called_with(
-            sock=sock,
-            server_side=False,
-            do_handshake_on_connect=False,
-            suppress_ragged_eofs=True,
-            server_hostname=sentinel.SERVER_HOSTNAME
-        )
-        assert mock_ssl_context_class().check_hostname is False
+
+            context.wrap_socket.assert_called_with(
+                sock=sock,
+                server_side=False,
+                do_handshake_on_connect=False,
+                suppress_ragged_eofs=True,
+                server_hostname=sentinel.SERVER_HOSTNAME
+            )
+            assert context.check_hostname is False
 
     def test_shutdown_transport(self):
         self.t.sock = None
@@ -753,6 +810,14 @@ class test_SSLTransport:
         sock = self.t.sock = Mock()
         self.t._shutdown_transport()
         assert self.t.sock is sock.unwrap()
+
+    def test_close__unwrap_error(self):
+        # sock.unwrap() can raise an error if the was a connection failure
+        # make sure the socket is properly closed and deallocated
+        sock = self.t.sock = Mock()
+        sock.unwrap.side_effect = OSError
+        self.t.close()
+        assert self.t.sock is None
 
     def test_read_EOF(self):
         self.t.sock = Mock(name='SSLSocket')

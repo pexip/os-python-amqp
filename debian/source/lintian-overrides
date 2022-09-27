@@ -1,0 +1,4 @@
+# Contains a PKCS7 bundle used for PayPal donations.
+python-amqp source: source-is-missing [docs/_templates/sidebardonations.html]
+# Contains a PKCS7 bundle used for PayPal donations.
+python-amqp source: very-long-line-length-in-source-file 2590 > 512 [docs/_templates/sidebardonations.html:5]
