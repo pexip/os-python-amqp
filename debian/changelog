@@ -1,3 +1,45 @@
+python-amqp (5.1.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Bump Standards-Version to 4.6.1.0.
+  * Add linitan overrides for PKCS7 bundle used in PayPal donation
+    button.
+  * Remove debian/upstream/signing-key.asc from d/source/include-
+    binaries.
+
+ -- Michael Fladischer <fladi@debian.org>  Tue, 27 Sep 2022 12:03:20 +0000
+
+python-amqp (5.1.0-1) unstable; urgency=low
+
+  * New upstream release.
+  * Refresh patches.
+  * Update year in d/copyright.
+
+ -- Michael Fladischer <fladi@debian.org>  Thu, 17 Mar 2022 15:15:14 +0000
+
+python-amqp (5.0.9-1) unstable; urgency=low
+
+  * New upstream release.
+  * Refresh patches.
+  * Depend on python3-all for autopkgtests.
+  * Update year in d/copyright.
+
+ -- Michael Fladischer <fladi@debian.org>  Fri, 31 Dec 2021 10:08:40 +0000
+
+python-amqp (5.0.6-1) unstable; urgency=low
+
+  * New upstream release.
+  * Bump debhelper version to 13.
+  * Bump Standards-Version to 4.6.0.
+  * Use uscan version 4.
+  * Run wrap-and-sort -bast to reduce diff size of future changes.
+  * Add python3-pytest-rerunfailures to Build-Depends, required by
+    tests.
+  * Only exclude rabbitmq tests through PYBUILD_TEST_ARGS.
+  * Enable upstream testsuite for autopkgtests.
+
+ -- Michael Fladischer <fladi@debian.org>  Fri, 10 Sep 2021 18:51:42 +0000
+
 python-amqp (5.0.3-3pexip3) pexip-bullseye; urgency=medium
 
   * Bullseye rebuild for ARM64 inclusion

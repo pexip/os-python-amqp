@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+cp -r setup.cfg t ${AUTOPKGTEST_TMP}
+cd ${AUTOPKGTEST_TMP}
+for p in $(py3versions -s); do
+    $p -m pytest -k "not test_rmq"
+done

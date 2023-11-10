@@ -8,11 +8,11 @@ Last-Update: 2019-03-20
  t/integration/test_integration.py | 32 --------------------------------
  1 file changed, 32 deletions(-)
 
-Index: python-amqp/t/integration/test_integration.py
-===================================================================
---- python-amqp.orig/t/integration/test_integration.py
-+++ python-amqp/t/integration/test_integration.py
-@@ -188,38 +188,6 @@ class test_connection:
+diff --git a/t/integration/test_integration.py b/t/integration/test_integration.py
+index d0b67b9..b6c3e2c 100644
+--- a/t/integration/test_integration.py
++++ b/t/integration/test_integration.py
+@@ -189,38 +189,6 @@ class test_connection:
                  'guest', 'guest'
              ).start(conn).decode('utf-8', 'surrogatepass')
  
