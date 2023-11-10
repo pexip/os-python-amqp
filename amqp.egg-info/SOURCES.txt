@@ -56,11 +56,13 @@ requirements/pkgutils.txt
 requirements/test-ci.txt
 requirements/test.txt
 t/__init__.py
+t/mocks.py
 t/integration/__init__.py
 t/integration/conftest.py
 t/integration/test_integration.py
 t/integration/test_rmq.py
 t/unit/__init__.py
+t/unit/conftest.py
 t/unit/test_abstract_channel.py
 t/unit/test_basic_message.py
 t/unit/test_channel.py

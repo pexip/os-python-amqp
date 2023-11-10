@@ -1,4 +1,5 @@
 import socket
+from array import array
 from struct import pack
 from unittest.mock import ANY, Mock, call, patch
 
@@ -114,7 +115,7 @@ def build_frame_type_3(channel, body):
 
 class DataComparator:
     # Comparator used for asserting serialized data. It can be used
-    # in cases when direct comparision of bytestream cannot be used
+    # in cases when direct comparison of bytestream cannot be used
     # (mainly cases of Table type where order of items can vary)
     def __init__(self, argsig, items):
         self.argsig = argsig
@@ -367,7 +368,7 @@ class test_connection:
     @patch('amqp.Connection._on_blocked')
     def test_connecion_ignore_methods_during_close(self, on_blocked_mock):
         # Test checking that py-amqp will discard any received methods
-        # except Close and Close-OK after sending Connecion.Close method
+        # except Close and Close-OK after sending Connection.Close method
         # to server.
         frame_writer_cls_mock = Mock()
         frame_writer_mock = frame_writer_cls_mock()
@@ -414,6 +415,17 @@ class test_connection:
                     1, 0, spec.Connection.CloseOk, '', None
                 )
                 callback_mock.assert_called_once_with()
+
+    def test_send_heartbeat(self):
+        """The send_heartbeat method writes the expected output."""
+        conn = Connection()
+        with patch.object(conn, 'Transport') as transport_mock:
+            handshake(conn, transport_mock)
+            transport_mock().write.reset_mock()
+            conn.send_heartbeat()
+            transport_mock().write.assert_called_once_with(
+                memoryview(bytearray(b'\x08\x00\x00\x00\x00\x00\x00\xce'))
+            )
 
 
 class test_channel:
@@ -534,9 +546,11 @@ class test_channel:
             frame_writer_mock.reset_mock()
 
             on_open_mock = Mock()
+            assert conn._used_channel_ids == array('H')
             ch = conn.channel(channel_id=channel_id, callback=on_open_mock)
             on_open_mock.assert_called_once_with(ch)
             assert ch.is_open is True
+            assert conn._used_channel_ids == array('H', (1,))
 
             ch.close()
             frame_writer_mock.assert_has_calls(
@@ -552,6 +566,7 @@ class test_channel:
                 ]
             )
             assert ch.is_open is False
+            assert conn._used_channel_ids == array('H')
 
     def test_received_channel_Close_during_connection_close(self):
         # This test verifies that library handles correctly closing channel
@@ -601,7 +616,7 @@ class test_channel:
                 callback_mock.assert_called_once()
 
     def test_basic_publish(self):
-        # Test verifing publishing message.
+        # Test verifying publishing message.
         frame_writer_cls_mock = Mock()
         conn = Connection(frame_writer=frame_writer_cls_mock)
         with patch.object(conn, 'Transport') as transport_mock:
@@ -621,7 +636,7 @@ class test_channel:
             )
 
     def test_consume_no_consumer_tag(self):
-        # Test verifing starting consuming without specified consumer_tag
+        # Test verifying starting consuming without specified consumer_tag
         callback_mock = Mock()
         frame_writer_cls_mock = Mock()
         conn = Connection(frame_writer=frame_writer_cls_mock)
@@ -652,7 +667,7 @@ class test_channel:
             assert ret == 'amq.ctag-PCmzXGkhCw_v0Zq7jXyvkg'
 
     def test_consume_with_consumer_tag(self):
-        # Test verifing starting consuming with specified consumer_tag
+        # Test verifying starting consuming with specified consumer_tag
         callback_mock = Mock()
         frame_writer_cls_mock = Mock()
         conn = Connection(frame_writer=frame_writer_cls_mock)
@@ -745,7 +760,7 @@ class test_channel:
             assert excinfo.value.method_sig == spec.Exchange.Declare
             # Client is sending to broker:
             # 1. Exchange Declare
-            # 2. Connection.CloseOk as reply to received Connecton.Close
+            # 2. Connection.CloseOk as reply to received Connection.Close
             frame_writer_calls = [
                 call(
                     1, 1, spec.Queue.Declare,
@@ -1024,7 +1039,7 @@ class test_channel:
             assert excinfo.value.method_sig == spec.Exchange.Declare
             # Client is sending to broker:
             # 1. Exchange Declare
-            # 2. Connection.CloseOk as reply to received Connecton.Close
+            # 2. Connection.CloseOk as reply to received Connection.Close
             frame_writer_calls = [
                 call(
                     1, 1, spec.Exchange.Declare,
