@@ -9,18 +9,18 @@ Uploaders:
  Christopher Hoskin <mans0954@debian.org>,
 Build-Depends:
  debhelper-compat (= 13),
- dh-python,
+ dh-sequence-python3,
+ pybuild-plugin-pyproject,
  python3-all,
  python3-setuptools,
 Build-Depends-Indep:
  libjs-jquery,
- python3-case <!nocheck>,
  python3-pytest <!nocheck>,
  python3-pytest-rerunfailures <!nocheck>,
  python3-sphinx <!nodoc>,
  python3-sphinx-celery <!nodoc>,
  python3-vine <!nocheck>,
-Standards-Version: 4.6.1.0
+Standards-Version: 4.7.0
 Homepage: https://github.com/celery/py-amqp
 Vcs-Git: https://salsa.debian.org/python-team/packages/python-amqp.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/python-amqp
@@ -89,5 +89,3 @@ Description: Low-level AMQP client (Python3 version)
   * Adds Channel.no_ack_consumers to keep track of consumer tags that set the
     no_ack flag.
   * Slightly better at error recovery.
- .
- This package contains the Python 3 version of the library.

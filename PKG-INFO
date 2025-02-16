@@ -1,10 +1,10 @@
 Metadata-Version: 2.1
 Name: amqp
-Version: 5.1.1
+Version: 5.3.1
 Summary: Low-level AMQP client for Python (fork of amqplib).
 Home-page: http://github.com/celery/py-amqp
 Author: Barry Pederson
-Author-email: pyamqp@celeryproject.org
+Author-email: auvipy@gmail.com
 Maintainer: Asif Saif Uddin, Matus Valo
 License: BSD
 Keywords: amqp rabbitmq cloudamqp messaging
@@ -25,6 +25,7 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.6
 Description-Content-Type: text/x-rst
 License-File: LICENSE
+Requires-Dist: vine<6.0.0,>=5.0.0
 
 =====================================================================
  Python AMQP 0.9.1 client library
@@ -32,7 +33,7 @@ License-File: LICENSE
 
 |build-status| |coverage| |license| |wheel| |pyversion| |pyimp|
 
-:Version: 5.1.1
+:Version: 5.3.1
 :Web: https://amqp.readthedocs.io/
 :Download: https://pypi.org/project/amqp/
 :Source: http://github.com/celery/py-amqp/
@@ -208,12 +209,12 @@ Further
 
     http://www.rabbitmq.com/devtools.html#python-dev
 
-.. |build-status| image:: https://api.travis-ci.com/celery/py-amqp.png?branch=master
+.. |build-status| image:: https://github.com/celery/py-amqp/actions/workflows/ci.yaml/badge.svg
     :alt: Build status
-    :target: https://travis-ci.com/celery/py-amqp
+    :target: https://github.com/celery/py-amqp/actions/workflows/ci.yaml
 
-.. |coverage| image:: https://codecov.io/github/celery/py-amqp/coverage.svg?branch=master
-    :target: https://codecov.io/github/celery/py-amqp?branch=master
+.. |coverage| image:: https://codecov.io/github/celery/py-amqp/coverage.svg?branch=main
+    :target: https://codecov.io/github/celery/py-amqp?branch=main
 
 .. |license| image:: https://img.shields.io/pypi/l/amqp.svg
     :alt: BSD License
@@ -230,11 +231,9 @@ Further
 .. |pyimp| image:: https://img.shields.io/pypi/implementation/amqp.svg
     :alt: Support Python implementations.
     :target: https://pypi.org/project/amqp/
-    
+
 py-amqp as part of the Tidelift Subscription
 ============================================
 
 The maintainers of py-amqp and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source dependencies you use to build your applications. Save time, reduce risk, and improve code health, while paying the maintainers of the exact dependencies you use. [Learn more.](https://tidelift.com/subscription/pkg/pypi-amqp?utm_source=pypi-amqp&utm_medium=referral&utm_campaign=readme&utm_term=repo)
-
-
 
