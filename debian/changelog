@@ -1,3 +1,36 @@
+python-amqp (5.3.1-2) unstable; urgency=medium
+
+  * Team upload.
+  * Trim autopkgtest dependencies
+
+ -- Alexandre Detiste <tchet@debian.org>  Sun, 16 Feb 2025 20:00:52 +0100
+
+python-amqp (5.3.1-1) unstable; urgency=low
+
+  * New upstream version 5.3.1
+  * Refresh patches.
+  * Bump Standards-Version to 4.7.0.
+  * Update year in d/copyright.
+
+ -- Michael Fladischer <fladi@debian.org>  Wed, 20 Nov 2024 15:46:39 +0000
+
+python-amqp (5.2.0-2) unstable; urgency=medium
+
+  * Team upload.
+  * Remove dependency on python3-case
+
+ -- Alexandre Detiste <tchet@debian.org>  Tue, 14 May 2024 23:57:31 +0200
+
+python-amqp (5.2.0-1) unstable; urgency=low
+
+  * New upstream version 5.2.0
+  * Bump Standards-Version to 4.6.2.
+  * Update year in d/copyright.
+  * Build using pybuild-plugin-pyproject and dh-sequence-python3.
+  * Install testfiles using d/pybuild.testfiles.
+
+ -- Michael Fladischer <fladi@debian.org>  Wed, 29 Nov 2023 14:55:51 +0000
+
 python-amqp (5.1.1-1+pexip24u3) pexip-bookworm; urgency=medium
 
   * New versioning scheme
